@@ -51,8 +51,7 @@ public class DeviceList extends Activity {
         setResult(Activity.RESULT_CANCELED);
         
         // Initialize the button to perform device discovery
-        int buttonId = getIntent().getIntExtra("button_scan", R.id.button_scan);
-        scanButton = (Button) findViewById(buttonId);
+        scanButton = (Button) findViewById(R.id.button_scan);
         String strScanDevice = getIntent().getStringExtra("scan_for_devices");
         if(strScanDevice == null) 
         	strScanDevice = "SCAN FOR DEVICES";
@@ -65,12 +64,11 @@ public class DeviceList extends Activity {
 
         // Initialize array adapters. One for already paired devices 
         // and one for newly discovered devices
-        int textId = getIntent().getIntExtra("text_device", R.layout.device_name);
-        mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this, textId);
+        int layout_text = getIntent().getIntExtra("layout_text", R.layout.device_name);
+        mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this, layout_text);
 
         // Find and set up the ListView for paired devices
-        int list_devices = getIntent().getIntExtra("list_devices", R.id.list_devices);
-        ListView pairedListView = (ListView) findViewById(list_devices);
+        ListView pairedListView = (ListView) findViewById(R.id.list_devices);
         pairedListView.setAdapter(mPairedDevicesArrayAdapter);
         pairedListView.setOnItemClickListener(mDeviceClickListener);
         

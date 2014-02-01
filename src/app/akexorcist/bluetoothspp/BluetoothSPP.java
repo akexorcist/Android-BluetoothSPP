@@ -16,9 +16,9 @@ import android.widget.Toast;
 @SuppressLint("NewApi")
 public class BluetoothSPP {
 	// Listener for Bluetooth Status & Connection
-	private BluetoothStatusListener mBluetoothStatusListener;
-	private BluetoothConnectionListener mBluetoothConnectionListener;
-	private AutoConnectionListener mAutoConnectionListener;
+	private BluetoothStatusListener mBluetoothStatusListener = null;
+	private BluetoothConnectionListener mBluetoothConnectionListener = null;
+	private AutoConnectionListener mAutoConnectionListener = null;
 	
 	// This for Debugging
     private static final String TAG = "BluetoothSPP";
@@ -117,7 +117,8 @@ public class BluetoothSPP {
                 byte[] readBuf = (byte[]) msg.obj;
                 String readMessage = new String(readBuf);
                 if(readBuf != null && readBuf.length > 0) {
-                    mBluetoothStatusListener.onDataReceived(readBuf, readMessage);
+                	if(mBluetoothStatusListener != null)
+                		mBluetoothStatusListener.onDataReceived(readBuf, readMessage);
                 }
                 break;
             case BluetoothState.MESSAGE_DEVICE_NAME:
@@ -125,7 +126,8 @@ public class BluetoothSPP {
                 mDeviceAddress = msg.getData().getString(BluetoothState.DEVICE_ADDRESS);
                 Toast.makeText(mContext, "Connected to " + mDeviceName, Toast.LENGTH_SHORT).show();
                 Log.i(TAG, "Connected to " + mDeviceName);
-            	mBluetoothConnectionListener.onDeviceConnected(mDeviceName, mDeviceAddress);
+            	if(mBluetoothConnectionListener != null)
+            		mBluetoothConnectionListener.onDeviceConnected(mDeviceName, mDeviceAddress);
                 isConnected = true;
                 break;
             case BluetoothState.MESSAGE_TOAST:
@@ -133,9 +135,11 @@ public class BluetoothSPP {
                 		, Toast.LENGTH_SHORT).show();
                 break;
             case BluetoothState.MESSAGE_STATE_CHANGE:
-                mBluetoothStatusListener.onServiceStateChanged(msg.arg1);
+            	if(mBluetoothStatusListener != null)
+            		mBluetoothStatusListener.onServiceStateChanged(msg.arg1);
                 if(isConnected && msg.arg1 != BluetoothState.STATE_CONNECTED) {
-                	mBluetoothConnectionListener.onDeviceDisconnected();
+                	if(mBluetoothConnectionListener != null)
+                		mBluetoothConnectionListener.onDeviceDisconnected();
                     isConnected = false;
                     mDeviceName = null;
                     mDeviceAddress = null;
@@ -145,7 +149,8 @@ public class BluetoothSPP {
                 	isConnecting = true;
                 } else if(isConnecting) {
                 	if(msg.arg1 != BluetoothState.STATE_CONNECTED) {
-                		mBluetoothConnectionListener.onDeviceConnectionFailed();
+                    	if(mBluetoothConnectionListener != null)
+                    		mBluetoothConnectionListener.onDeviceConnectionFailed();
                 	}
                 	isConnecting = false;
                 }
@@ -225,7 +230,8 @@ public class BluetoothSPP {
     public void autoConnect(String keywordName) {
     	if(!isAutoConnecting) {
     		isAutoConnecting = true;
-    		mAutoConnectionListener.onAutoConnectionStarted();
+        	if(mAutoConnectionListener != null)
+        		mAutoConnectionListener.onAutoConnectionStarted();
 	    	final ArrayList<String> arr_filter_address = new ArrayList<String>();
 	    	final ArrayList<String> arr_filter_name = new ArrayList<String>();
 	    	String[] arr_name = getPairedDeviceName();
@@ -241,7 +247,8 @@ public class BluetoothSPP {
 				public void onDeviceConnected(String name, String address) {
 					bcl = null;
 		    		isAutoConnecting = false;
-    	    		mAutoConnectionListener.onAutoConnectionFinished(true);
+		        	if(mAutoConnectionListener != null)
+		        		mAutoConnectionListener.onAutoConnectionFinished(true);
 				}
 	
 				public void onDeviceDisconnected() { }
@@ -249,26 +256,33 @@ public class BluetoothSPP {
 					c++;
 					if(c < arr_filter_address.size()) {
 				    	connect(arr_filter_address.get(c));
-    			    	mAutoConnectionListener.onNewConnection(arr_filter_name.get(c)
+			        	if(mAutoConnectionListener != null)
+			        		mAutoConnectionListener.onNewConnection(arr_filter_name.get(c)
     			    			, arr_filter_address.get(c));
 					} else { 
 			    		isAutoConnecting = false;
-			    		mAutoConnectionListener.onAutoConnectionFinished(false);
+			        	if(mAutoConnectionListener != null)
+			        		mAutoConnectionListener.onAutoConnectionFinished(false);
 					}
 				}
 	    	};
 	
 	    	setBluetoothConnectionListener(bcl);
 	    	c = 0;
-	    	mAutoConnectionListener.onNewConnection(arr_name[c], arr_address[c]);
-	    	connect(arr_filter_address.get(c));
+        	if(mAutoConnectionListener != null)
+        		mAutoConnectionListener.onNewConnection(arr_name[c], arr_address[c]);
+        	if(arr_filter_address.size() > 0) 
+        		connect(arr_filter_address.get(c));
+        	else 
+        		Toast.makeText(mContext, "Device name mismatch", Toast.LENGTH_SHORT).show();
     	}
     }
     
     public void autoConnect() {
     	if(!isAutoConnecting) {
     		isAutoConnecting = true;
-    		mAutoConnectionListener.onAutoConnectionStarted();
+        	if(mAutoConnectionListener != null)
+        		mAutoConnectionListener.onAutoConnectionStarted();
     		final String[] arr_name = getPairedDeviceName();
     		final String[] arr_address = getPairedDeviceAddress();
 
@@ -276,7 +290,8 @@ public class BluetoothSPP {
     			public void onDeviceConnected(String name, String address) {
     				bcl = null;
     	    		isAutoConnecting = false;
-    	    		mAutoConnectionListener.onAutoConnectionFinished(true);
+    	        	if(mAutoConnectionListener != null)
+    	        		mAutoConnectionListener.onAutoConnectionFinished(true);
     			}
 
     			public void onDeviceDisconnected() { }
@@ -284,18 +299,24 @@ public class BluetoothSPP {
     				c++;
     				if(c < arr_address.length) {
     			    	connect(arr_address[c]);
-    			    	mAutoConnectionListener.onNewConnection(arr_name[c], arr_address[c]);
+    		        	if(mAutoConnectionListener != null)
+    		        		mAutoConnectionListener.onNewConnection(arr_name[c], arr_address[c]);
     				} else { 
     		    		isAutoConnecting = false;
-    		    		mAutoConnectionListener.onAutoConnectionFinished(false);
+    		        	if(mAutoConnectionListener != null)
+    		        		mAutoConnectionListener.onAutoConnectionFinished(false);
     				}
     			}
         	};
 
         	setBluetoothConnectionListener(bcl);
         	c = 0;
-	    	mAutoConnectionListener.onNewConnection(arr_name[c], arr_address[c]);
-        	connect(arr_address[c]);
+        	if(mAutoConnectionListener != null)
+        		mAutoConnectionListener.onNewConnection(arr_name[c], arr_address[c]);
+        	if(arr_address.length > 0) 
+            	connect(arr_address[c]);
+        	else 
+        		Toast.makeText(mContext, "No devices have been paired", Toast.LENGTH_SHORT).show();
     	}
     }
 }
