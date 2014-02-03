@@ -16,7 +16,8 @@ import android.widget.Toast;
 @SuppressLint("NewApi")
 public class BluetoothSPP {
 	// Listener for Bluetooth Status & Connection
-	private BluetoothStatusListener mBluetoothStatusListener = null;
+	private BluetoothStateListener mBluetoothStateListener = null;
+	private OnDataReceivedListener mDataReceivedListener = null;
 	private BluetoothConnectionListener mBluetoothConnectionListener = null;
 	private AutoConnectionListener mAutoConnectionListener = null;
 	
@@ -53,9 +54,12 @@ public class BluetoothSPP {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 	}
 	
-    public interface BluetoothStatusListener {
-	    public void onDataReceived(byte[] data, String message);
+    public interface BluetoothStateListener {
 	    public void onServiceStateChanged(int state);
+	}
+	
+    public interface OnDataReceivedListener {
+	    public void onDataReceived(byte[] data, String message);
 	}
     
     public interface BluetoothConnectionListener {
@@ -84,7 +88,7 @@ public class BluetoothSPP {
 	}
 	
 	public boolean isServiceAvailable() {
-		return (mChatService == null);
+		return mChatService != null;
 	}
 	
 	public boolean isAutoConnecting() {
@@ -96,7 +100,10 @@ public class BluetoothSPP {
 	}
 	
 	public int getServiceState() {
-		return mChatService.getState();
+		if(mChatService != null) 
+			return mChatService.getState();
+		else 
+			return -1;
 	}
 	
 	public void startService(boolean isAndroid) {
@@ -110,15 +117,29 @@ public class BluetoothSPP {
 	}
 	
 	public void stopService() {
-        if (mChatService != null) {
+		if (mChatService != null) {
         	isServiceRunning = false;
         	mChatService.stop();
         }
+		new Handler().postDelayed(new Runnable() {
+			public void run() {
+		        if (mChatService != null) {
+		        	isServiceRunning = false;
+		        	mChatService.stop();
+		        }
+			}
+		}, 500);
 	}
     
     public void restartService() {
-    	stopService();
-    	startService(BluetoothSPP.this.isAndroid);
+    	if (mChatService != null) {
+        	isServiceRunning = false;
+        	mChatService.stop();
+            if (mChatService.getState() == BluetoothState.STATE_NONE) {
+            	isServiceRunning = true;
+            	mChatService.start(BluetoothSPP.this.isAndroid);
+            }
+        }
     }
     
     public void setDeviceTarget(boolean isAndroid) {
@@ -136,8 +157,8 @@ public class BluetoothSPP {
                 byte[] readBuf = (byte[]) msg.obj;
                 String readMessage = new String(readBuf);
                 if(readBuf != null && readBuf.length > 0) {
-                	if(mBluetoothStatusListener != null)
-                		mBluetoothStatusListener.onDataReceived(readBuf, readMessage);
+                	if(mDataReceivedListener != null)
+                		mDataReceivedListener.onDataReceived(readBuf, readMessage);
                 }
                 break;
             case BluetoothState.MESSAGE_DEVICE_NAME:
@@ -152,8 +173,8 @@ public class BluetoothSPP {
                 		, Toast.LENGTH_SHORT).show();
                 break;
             case BluetoothState.MESSAGE_STATE_CHANGE:
-            	if(mBluetoothStatusListener != null)
-            		mBluetoothStatusListener.onServiceStateChanged(msg.arg1);
+            	if(mBluetoothStateListener != null)
+            		mBluetoothStateListener.onServiceStateChanged(msg.arg1);
                 if(isConnected && msg.arg1 != BluetoothState.STATE_CONNECTED) {
                 	if(mBluetoothConnectionListener != null)
                 		mBluetoothConnectionListener.onDeviceDisconnected();
@@ -199,8 +220,12 @@ public class BluetoothSPP {
         mChatService.connect(device);
     }
     
-    public void setBluetoothStatusListener (BluetoothStatusListener listener) {
-    	mBluetoothStatusListener = listener;
+    public void setBluetoothStatusListener (BluetoothStateListener listener) {
+    	mBluetoothStateListener = listener;
+    }
+    
+    public void setOnDataReceivedListener (OnDataReceivedListener listener) {
+    	mDataReceivedListener = listener;
     }
     
     public void setBluetoothConnectionListener (BluetoothConnectionListener listener) {

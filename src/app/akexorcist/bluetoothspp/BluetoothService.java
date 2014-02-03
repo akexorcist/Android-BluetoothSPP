@@ -154,7 +154,7 @@ public class BluetoothService {
     // Stop all threads
     public synchronized void stop() {
         if (mConnectThread != null) {
-            mConnectThread.cancel();
+        	mConnectThread.cancel();
             mConnectThread = null;
         }
 
@@ -165,6 +165,7 @@ public class BluetoothService {
 
         if (mSecureAcceptThread != null) {
             mSecureAcceptThread.cancel();
+        	mSecureAcceptThread.kill();
             mSecureAcceptThread = null;
         }
         setState(BluetoothState.STATE_NONE);
@@ -201,8 +202,9 @@ public class BluetoothService {
     // (or until cancelled)
     private class AcceptThread extends Thread {
         // The local server socket
-        private final BluetoothServerSocket mmServerSocket;
+        private BluetoothServerSocket mmServerSocket;
         private String mSocketType;
+        boolean isRunning = true;
 
         public AcceptThread(boolean isAndroid) {
             BluetoothServerSocket tmp = null;
@@ -219,11 +221,10 @@ public class BluetoothService {
 
         public void run() {
             setName("AcceptThread" + mSocketType);
-
             BluetoothSocket socket = null;
 
             // Listen to the server socket if we're not connected
-            while (mState != BluetoothState.STATE_CONNECTED) {
+            while (mState != BluetoothState.STATE_CONNECTED && isRunning) {
                 try {
                     // This is a blocking call and will only return on a
                     // successful connection or an exception
@@ -258,7 +259,12 @@ public class BluetoothService {
         public void cancel() {
             try {
                 mmServerSocket.close();
+                mmServerSocket = null;
             } catch (IOException e) { }
+        }
+
+        public void kill() {
+        	isRunning = false;
         }
     }
 
