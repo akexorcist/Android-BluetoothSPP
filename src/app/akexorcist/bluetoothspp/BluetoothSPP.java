@@ -42,8 +42,8 @@ public class BluetoothSPP {
 	private String keyword = "";
     private boolean isAndroid = BluetoothState.DEVICE_ANDROID;
 	
-    BluetoothConnectionListener bcl;
-    int c = 0;
+    private BluetoothConnectionListener bcl;
+    private int c = 0;
 	
 	public BluetoothSPP(Context context) {
 		mContext = context;
