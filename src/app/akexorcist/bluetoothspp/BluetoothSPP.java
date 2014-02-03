@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.widget.Toast;
 
 @SuppressLint("NewApi")
@@ -20,9 +19,6 @@ public class BluetoothSPP {
 	private OnDataReceivedListener mDataReceivedListener = null;
 	private BluetoothConnectionListener mBluetoothConnectionListener = null;
 	private AutoConnectionListener mAutoConnectionListener = null;
-	
-	// This for Debugging
-    private static final String TAG = "BluetoothSPP";
     
     // Context from activity which call this class
 	private Context mContext;
