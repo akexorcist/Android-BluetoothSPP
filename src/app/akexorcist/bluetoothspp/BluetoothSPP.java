@@ -143,8 +143,6 @@ public class BluetoothSPP {
             case BluetoothState.MESSAGE_DEVICE_NAME:
                 mDeviceName = msg.getData().getString(BluetoothState.DEVICE_NAME);
                 mDeviceAddress = msg.getData().getString(BluetoothState.DEVICE_ADDRESS);
-                Toast.makeText(mContext, "Connected to " + mDeviceName, Toast.LENGTH_SHORT).show();
-                Log.i(TAG, "Connected to " + mDeviceName);
             	if(mBluetoothConnectionListener != null)
             		mBluetoothConnectionListener.onDeviceConnected(mDeviceName, mDeviceAddress);
                 isConnected = true;
