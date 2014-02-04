@@ -69,7 +69,7 @@ public class BluetoothSPP {
 	    public void onNewConnection(String name, String address);
 	}
 	
-	public boolean isBluetoothAvailable() {
+	public boolean isBluetoothAvailabled() {
         try {
         	if (mBluetoothAdapter == null || mBluetoothAdapter.getAddress().equals(null))
 	            return false;
@@ -79,7 +79,7 @@ public class BluetoothSPP {
         return true;
 	}
 	
-	public boolean isBluetoothEnable() {
+	public boolean isBluetoothEnabled() {
 		return mBluetoothAdapter.isEnabled();
 	}
 	
@@ -196,10 +196,6 @@ public class BluetoothSPP {
             }
         }
     };
-    
-    public boolean isAutoConnectionEnabled() {
-    	return isAutoConnectionEnabled;
-    }
     
     public void stopAutoConnect() {
     	isAutoConnectionEnabled = false;
