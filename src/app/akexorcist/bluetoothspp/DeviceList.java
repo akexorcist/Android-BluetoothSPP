@@ -92,7 +92,7 @@ public class DeviceList extends Activity {
                 mPairedDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
             }
         } else {
-            String noDevices = "No devices have been paired";
+            String noDevices = "No devices found";
             mPairedDevicesArrayAdapter.add(noDevices);
         }
     }
@@ -122,10 +122,10 @@ public class DeviceList extends Activity {
                 mPairedDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
             }
         } else {
-            String strNoPaired = getIntent().getStringExtra("no_devices_paired");
-            if(strNoPaired == null) 
-            	strNoPaired = "No devices have been paired";
-            mPairedDevicesArrayAdapter.add(strNoPaired);
+            String strNoFound = getIntent().getStringExtra("no_devices_found");
+            if(strNoFound == null) 
+            	strNoFound = "No devices found";
+            mPairedDevicesArrayAdapter.add(strNoFound);
         }
         
         // Indicate scanning in the title
@@ -150,7 +150,8 @@ public class DeviceList extends Activity {
     private OnItemClickListener mDeviceClickListener = new OnItemClickListener() {
         public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
             // Cancel discovery because it's costly and we're about to connect
-            mBtAdapter.cancelDiscovery();
+            if(mBtAdapter.isDiscovering())
+            	mBtAdapter.cancelDiscovery();
 
             String strNoFound = getIntent().getStringExtra("no_devices_found");
             if(strNoFound == null) 
@@ -184,6 +185,13 @@ public class DeviceList extends Activity {
                 
                 // If it's already paired, skip it, because it's been listed already
                 if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
+                    String strNoFound = getIntent().getStringExtra("no_devices_found");
+                    if(strNoFound == null) 
+                    	strNoFound = "No devices found";                    
+                    
+                	if(mPairedDevicesArrayAdapter.getItem(0).equals(strNoFound)) {
+                		mPairedDevicesArrayAdapter.remove(strNoFound);
+                	}
                 	mPairedDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
                 }
                 
@@ -194,13 +202,6 @@ public class DeviceList extends Activity {
                 if(strSelectDevice == null) 
                 	strSelectDevice = "Select a device to connect";
                 setTitle(strSelectDevice);
-
-                if (mPairedDevicesArrayAdapter.getCount() == 0) {
-                    String strNoFound = getIntent().getStringExtra("no_devices_found");
-                    if(strNoFound == null) 
-                    	strNoFound = "No devices found";
-                	mPairedDevicesArrayAdapter.add(strNoFound);
-                }
             }
         }
     };
