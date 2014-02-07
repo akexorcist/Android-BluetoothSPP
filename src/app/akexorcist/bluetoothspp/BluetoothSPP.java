@@ -69,7 +69,7 @@ public class BluetoothSPP {
 	    public void onNewConnection(String name, String address);
 	}
 	
-	public boolean isBluetoothAvailabled() {
+	public boolean isBluetoothAvailable() {
         try {
         	if (mBluetoothAdapter == null || mBluetoothAdapter.getAddress().equals(null))
 	            return false;
@@ -127,20 +127,10 @@ public class BluetoothSPP {
 		}, 500);
 	}
     
-    public void restartService() {
-    	if (mChatService != null) {
-        	isServiceRunning = false;
-        	mChatService.stop();
-            if (mChatService.getState() == BluetoothState.STATE_NONE) {
-            	isServiceRunning = true;
-            	mChatService.start(BluetoothSPP.this.isAndroid);
-            }
-        }
-    }
-    
     public void setDeviceTarget(boolean isAndroid) {
     	stopService();
-    	startService(BluetoothSPP.this.isAndroid);
+    	startService(isAndroid);
+    	BluetoothSPP.this.isAndroid = isAndroid;
     }
 	
 	@SuppressLint("HandlerLeak")
@@ -212,7 +202,18 @@ public class BluetoothSPP {
         mChatService.connect(device);
     }
     
-    public void setBluetoothStatusListener (BluetoothStateListener listener) {
+    public void disconnect() {
+    	if(mChatService != null) {
+        	isServiceRunning = false;
+        	mChatService.stop();
+            if(mChatService.getState() == BluetoothState.STATE_NONE) {
+            	isServiceRunning = true;
+            	mChatService.start(BluetoothSPP.this.isAndroid);
+            }
+        }
+    }
+    
+    public void setBluetoothStateListener (BluetoothStateListener listener) {
     	mBluetoothStateListener = listener;
     }
     
@@ -254,7 +255,7 @@ public class BluetoothSPP {
     	int c = 0;
     	Set<BluetoothDevice> devices = mBluetoothAdapter.getBondedDevices();  
     	String[] name_list = new String[devices.size()];
-        for (BluetoothDevice device : devices) {  
+        for(BluetoothDevice device : devices) {  
         	name_list[c] = device.getName();
         	c++;
         }  
@@ -265,7 +266,7 @@ public class BluetoothSPP {
     	int c = 0;
     	Set<BluetoothDevice> devices = mBluetoothAdapter.getBondedDevices();  
     	String[] address_list = new String[devices.size()];
-        for (BluetoothDevice device : devices) {  
+        for(BluetoothDevice device : devices) {  
         	address_list[c] = device.getAddress();
         	c++;
         }  
