@@ -91,8 +91,24 @@ public class BluetoothSPP {
 		return isAutoConnecting;
 	}
 	
+	public boolean startDiscovery() {
+		return mBluetoothAdapter.startDiscovery();
+	}
+	
+	public boolean isDiscovery() {
+		return mBluetoothAdapter.isDiscovering();
+	}
+	
+	public boolean cancelDiscovery() {
+		return mBluetoothAdapter.cancelDiscovery();
+	}
+	
 	public void setupService() {
         mChatService = new BluetoothService(mContext, mHandler);
+	}
+	
+	public BluetoothAdapter getBluetoothAdapter() {
+		return mBluetoothAdapter;
 	}
 	
 	public int getServiceState() {
